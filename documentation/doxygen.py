@@ -3510,7 +3510,7 @@ def parse_doxyfile(state: State, doxyfile, values = None):
     # Use top-level Doxyfile path as base, don't let it get overridden by
     # subsequently @INCLUDE'd Doxyfile
     if not state.basedir:
-        state.basedir = os.path.dirname(doxyfile)
+        state.basedir = os.path.realpath(os.getcwd())
 
     logging.debug("Parsing configuration from {}".format(doxyfile))
 
@@ -3583,7 +3583,7 @@ def parse_doxyfile(state: State, doxyfile, values = None):
 
                 # Another file included, parse it
                 if key == '@INCLUDE':
-                    parse_doxyfile(state, os.path.join(os.path.dirname(doxyfile), ' '.join(value)), values)
+                    parse_doxyfile(state, ' '.join(value), values)
                     assert not backslash
                 else:
                     values[key] = value
@@ -3962,6 +3962,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             i = os.path.join(os.path.dirname(os.path.realpath(__file__)), i)
 
         logging.debug("copying {} to output".format(i))
+
         shutil.copy(i, os.path.join(html_output, os.path.basename(file_out)))
 
     # Save updated math cache file
@@ -4010,6 +4011,6 @@ if __name__ == '__main__': # pragma: no cover
 
     if not args.no_doxygen:
         logging.debug("running Doxygen on {}".format(doxyfile))
-        subprocess.run(["doxygen", doxyfile], cwd=os.path.dirname(doxyfile), check=True)
+        subprocess.run(["doxygen", doxyfile], check=True)
 
     run(state, templates=os.path.abspath(args.templates), wildcard=args.wildcard, index_pages=args.index_pages, search_merge_subtrees=not args.search_no_subtree_merging, search_add_lookahead_barriers=not args.search_no_lookahead_barriers, search_merge_prefixes=not args.search_no_prefix_merging)
